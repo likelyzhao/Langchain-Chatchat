@@ -34,8 +34,45 @@ def search_docs(
     kb = KBServiceFactory.get_service_by_name(knowledge_base_name)
     if kb is None:
         return []
-    docs = kb.search_docs(query, top_k, score_threshold)
-    data = [DocumentWithScore(**x[0].dict(), score=x[1]) for x in docs]
+    #threshtopk = 10
+    topdocs =[]
+    for word in query.split(","):
+        docs = kb.search_docs(word, top_k, score_threshold)
+        # print("threshold =", score_threshold)
+        # print("Searching words", word)
+        for doc in docs:
+            if len(topdocs) == top_k and doc[1] > topdocs[top_k-1].score :
+                continue     
+            matchflag = False
+            for idx in range(len(topdocs)):
+                #print(doc[0].page_content[:100], topdocs[idx].page_content[:100])
+                if doc[0].page_content[:100] == topdocs[idx].page_content[:100]:
+                   matchflag = True
+                   break
+            if matchflag:
+                #print("Matching")
+                #print(doc[0].page_content[:100], topdocs[idx].page_content[:100])
+                continue
+
+            insertidx = len(topdocs)
+            for idx in range(len(topdocs)):
+                if doc[1] < topdocs[idx].score:
+                    insertidx = idx
+                    break
+            topdocs.insert(insertidx, DocumentWithScore(**doc[0].dict(), score=doc[1]))
+            
+            if len(topdocs) ==0:
+                topdocs.append(DocumentWithScore(**doc[0].dict(), score=doc[1]))
+
+            if len(topdocs) > top_k:
+                topdocs = topdocs[:top_k]
+            #print("topdocs =", topdocs)
+            print([x.score for x in topdocs])
+    #print(topdocs)
+    #docs = kb.search_docs(query, top_k, score_threshold)
+    #data = [DocumentWithScore(**x[0].dict(), score=x[1]) for x in docs]
+
+    data = [x for x in topdocs]
     return data
 
 

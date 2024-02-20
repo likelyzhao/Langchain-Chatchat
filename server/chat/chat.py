@@ -74,12 +74,16 @@ async def chat(query: str = Body(..., description="用户输入", examples=["恼
                                                 message_limit=history_len)
         else:
             prompt_template = get_prompt_template("llm_chat", prompt_name)
+            #print(prompt_template)
             input_msg = History(role="user", content=prompt_template).to_msg_template(False)
             chat_prompt = ChatPromptTemplate.from_messages([input_msg])
+            #print(chat_prompt)
+            print("chat_prompt_format", chat_prompt.format(input=query))
 
         chain = LLMChain(prompt=chat_prompt, llm=model, memory=memory)
+        # print("chainc", chain)
 
-        # Begin a task that runs in the background.
+        # Begin a task that runs in the backgrou0nd.
         task = asyncio.create_task(wrap_done(
             chain.acall({"input": query}),
             callback.done),

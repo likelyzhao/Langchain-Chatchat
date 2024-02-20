@@ -177,6 +177,11 @@ def get_loader(loader_name: str, file_path: str, loader_kwargs: Dict = None):
         loader_kwargs.setdefault("jq_schema", ".")
         loader_kwargs.setdefault("text_content", False)
 
+    #import pandas as pd
+    #sheets = pd.read_excel(file_path, sheet_name=None, header=None)
+
+    loader_kwargs={"find_subtable":False}
+
     loader = DocumentLoader(file_path, **loader_kwargs)
     return loader
 
@@ -300,6 +305,10 @@ class KnowledgeFile:
             text_splitter: TextSplitter = None,
     ):
         docs = docs or self.file2docs(refresh=refresh)
+        #for doc in docs:
+        #    print(len(doc.page_content))
+        #import pdb
+       # pdb.set_trace()
         if not docs:
             return []
         if self.ext not in [".csv"]:
@@ -314,6 +323,8 @@ class KnowledgeFile:
         if not docs:
             return []
 
+
+       # pdb.set_trace()
         print(f"文档切分示例：{docs[0]}")
         if zh_title_enhance:
             docs = func_zh_title_enhance(docs)

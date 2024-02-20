@@ -362,10 +362,36 @@ class ApiRequest:
         temperature: float = TEMPERATURE,
         max_tokens: int = None,
         prompt_name: str = "default",
+        **kwargs,
     ):
         '''
         对应api.py/chat/knowledge_base_chat接口
         '''
+        # add keyword analyzer with gpt 
+        querydata = {
+            "query": query,
+            "conversation_id": "split_keyword",
+            #"history_len": 0,
+            #"history": history,
+            "stream": stream,
+            "model_name": model,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "prompt_name": "keyword",
+        }
+
+
+        response = self.post("/chat/chat", json=querydata, stream=True, **kwargs)
+        r = self._httpx_stream2generator(response, as_json=True)
+        totalstr = query + ","
+        for item in r:
+            totalstr += item["text"]
+        query = totalstr
+        #print(query)
+
+        #print(response)
+        #exit(0)
+
         data = {
             "query": query,
             "knowledge_base_name": knowledge_base_name,
